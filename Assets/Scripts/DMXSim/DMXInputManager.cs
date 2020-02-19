@@ -7,7 +7,6 @@ public class DMXInputManager : MonoBehaviour
 {
     const int UNIVERSES_MAX = 4;
     protected byte[] values;
-    public DMXUniverse[] universes;
 
     void Start()
     {
@@ -16,10 +15,10 @@ public class DMXInputManager : MonoBehaviour
 
     void Update()
     {
-        universes = FindObjectsOfType<DMXUniverse>();
-        foreach (var universe in universes)
+        var fixtures = FindObjectsOfType<FixtureController>();
+        foreach (var fixture in fixtures)
         {
-            universe.Update(this);
+            fixture.UpdateInputs(this);
         }
     }
 

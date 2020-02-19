@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class FixtureController : MonoBehaviour
 {
+    public int address;
+    public int universe;
     protected FixtureComponent[] components;
     protected DMXParameter[] parameters;
 
@@ -21,8 +23,9 @@ public class FixtureController : MonoBehaviour
 
         }
     }
-    public void UpdateInputs(DMXInputManager input, int universe, int offset)
+    public void UpdateInputs(DMXInputManager input)
     {
+        int offset = address;
         foreach (var parameter in parameters)
         {
             int value = (int)input.GetInput(universe, parameter.address + offset);
