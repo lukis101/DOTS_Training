@@ -1,6 +1,16 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.Entities;
+
+public struct DMXParameterComponent : IComponentData
+{
+    public int Address;
+    public int Universe;
+    public int MinValue;
+    public int MaxValue;
+    public float CurValue;
+}
 
 public class DMXParameter : MonoBehaviour
 {
