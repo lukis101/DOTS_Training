@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class DMXInputAnimator : MonoBehaviour
 {
-    public DMXInputManager inputManager;
+    protected DMXInputManager inputManager;
 
     void Start()
     {
