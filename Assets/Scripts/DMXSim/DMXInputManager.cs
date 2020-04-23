@@ -37,6 +37,14 @@ public class DMXInputManager : MonoBehaviour
     {
         DMXInputSingleton.instance.values[universe * 256 + addr] = (byte)(Mathf.Clamp01(value)*255);
     }
+
+    // For use within job systems
+    public static float GetCurrentValueMapped(in int universe, in int address, in int minvalue, in int maxvalue)
+    {
+        // TODO: multi-channel values via DMXInputResolution
+        int rawvalue = DMXInputSingleton.instance.values[universe * 256 + address];
+        return (rawvalue - minvalue) / (float)(maxvalue - minvalue);
+    }
 }
 
 public class DMXInputManagerSystem : JobComponentSystem

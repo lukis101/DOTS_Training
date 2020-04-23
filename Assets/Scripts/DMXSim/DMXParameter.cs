@@ -46,7 +46,7 @@ public class DMXParameter : MonoBehaviour
         //Debug.Log("New value: "+value);
         foreach (var component in affectedComponents)
         {
-            component.SetValueTest(currentValue);
+            component.SetParameterValue(function, currentValue);
         }
     }
 }
@@ -58,13 +58,17 @@ public enum DMXInputResolution
     res_24bits,
     res_32bits
 }
+// Theres should be a Component for every FixtureFunction to be used by actual fixture modules
 public enum FixtureFunction
 {
     func_Dimmer,
     func_Intensity,
-    func_Color_R,
-    func_Color_G,
-    func_Color_B,
+    func_Color_1, // R
+    func_Color_2, // G
+    func_Color_3, // B
+    func_Color_4, // Found in some devices, commonly white or amber
+    func_Angle,
+    func_Shutter,
     func_Rotation,
     func_Translation
 }

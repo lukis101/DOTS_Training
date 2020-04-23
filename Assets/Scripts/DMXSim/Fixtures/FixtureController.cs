@@ -70,19 +70,9 @@ public class FixtureController : MonoBehaviour, IConvertGameObjectToEntity, IDec
         {
             foreach (var fixturecomponent in param.affectedComponents)
             {
-                var dmxparam = new DMXParameterComponent
-                {
-                    Address = address + param.address,
-                    Universe = universe,
-                    MinValue = param.minValue,
-                    MaxValue = param.maxValue,
-                    CurValue = param.homeValue
-                };
-                //var instance = dstManager.Instantiate(prefab);
-                //var instance = GameObjectConversionUtility.
-                //dstManager.SetComponentData(instance, new Translation());
                 Entity fixturecomponentent = conversionSystem.GetPrimaryEntity(fixturecomponent.gameObject);
-                dstManager.AddComponentData(fixturecomponentent, dmxparam);
+
+                fixturecomponent.AddInputComponent(param, universe, address, dstManager, fixturecomponentent);
             }
         }
 

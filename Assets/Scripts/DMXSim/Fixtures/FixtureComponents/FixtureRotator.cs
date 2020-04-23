@@ -5,6 +5,7 @@ using Unity.Entities;
 using Unity.Jobs;
 using Unity.Transforms;
 using Unity.Mathematics;
+using System;
 
 public enum RotateAxis
 {
@@ -20,8 +21,13 @@ public struct AxisRotator : IComponentData
     public float TargetAngle;
     public float CurrentAngle;
 }
-public struct FixtureRotatorComponent : IComponentData
+public struct FixtureFunction_Rotation : IComponentData
 {
+    public int Address;
+    public int Universe;
+    public int MinValue;
+    public int MaxValue;
+
     public RotateAxis Axis;
 }
 
@@ -58,28 +64,41 @@ public class FixtureRotator : FixtureComponent, IConvertGameObjectToEntity
         transform.localRotation = Quaternion.AngleAxis(m_angleCurrent, axis);
     }
 
-    public override void SetValueTest(float test)
+    public override void SetParameterValue(FixtureFunction function, float value)
     {
-        m_angleTarget = Mathf.Lerp(m_angleMin, m_angleMax, test);
+        if (function == FixtureFunction.func_Rotation)
+            m_angleTarget = Mathf.Lerp(m_angleMin, m_angleMax, value);
     }
 
     public void Convert(Entity entity, EntityManager dstManager, GameObjectConversionSystem conversionSystem)
     {
-        var axisdata = new AxisRotator
-        {
-            AngleMin = m_angleMin,
-            AngleMax = m_angleMax,
-            Velocity = m_velocity,
-            TargetAngle = m_angleTarget,
-            CurrentAngle = m_angleCurrent
-        };
-        var rotdata = new FixtureRotatorComponent
-        {
-            Axis = m_axis
-        };
+        // Handled in AddInputComponent
+    }
 
-        dstManager.AddComponentData(entity, axisdata);
-        dstManager.AddComponentData(entity, rotdata);
+    public override void AddInputComponent(DMXParameter param, int universe, int address, EntityManager dstManager, Entity entity)
+    {
+        if (param.function == FixtureFunction.func_Rotation)
+        {
+            var rotdata = new FixtureFunction_Rotation
+            {
+                Address = address + param.address,
+                Universe = universe,
+                MinValue = param.minValue,
+                MaxValue = param.maxValue,
+
+                Axis = m_axis
+            };
+            dstManager.AddComponentData(entity, rotdata);
+            var axisdata = new AxisRotator
+            {
+                AngleMin = m_angleMin,
+                AngleMax = m_angleMax,
+                Velocity = m_velocity,
+                TargetAngle = m_angleTarget,
+                CurrentAngle = m_angleCurrent
+            };
+            dstManager.AddComponentData(entity, axisdata);
+        }
     }
 }
 
@@ -89,14 +108,17 @@ public class AxisRotatorSystem : JobComponentSystem
     protected override JobHandle OnUpdate(JobHandle inputDeps)
     {
         var dtime = Time.DeltaTime;
-        var outputDeps = Entities.WithoutBurst().ForEach((ref AxisRotator axis, in DMXParameterComponent param) => {
+        var outputDeps = Entities.WithoutBurst().ForEach((ref AxisRotator axis, in FixtureFunction_Rotation input) => {
+            float invalue = DMXInputManager.GetCurrentValueMapped(input.Universe, input.Address, input.MinValue, input.MaxValue);
+
             float curangle = axis.CurrentAngle;
             //float speed = 40f;
             float angdiff = axis.TargetAngle - curangle;
             axis.CurrentAngle = axis.TargetAngle;// curangle + angdiff * (dtime * speed);
-            float target = Mathf.Lerp(axis.AngleMin, axis.AngleMax, param.CurValue);
+            float target = Mathf.Lerp(axis.AngleMin, axis.AngleMax, invalue);
 
             axis.TargetAngle = target;
+            // TODO: simulate mechanical properties
             axis.CurrentAngle = target;
         }).Schedule(inputDeps);
 
@@ -105,12 +127,12 @@ public class AxisRotatorSystem : JobComponentSystem
 }
 
 [UpdateAfter(typeof(AxisRotatorSystem))]
-public class FixturePanSystem : JobComponentSystem
+public class FixtureRotationSystem : JobComponentSystem
 {
     protected override JobHandle OnUpdate(JobHandle inputDeps)
     {
         var dtime = Time.DeltaTime;
-        var outputDeps = Entities.WithoutBurst().ForEach((ref Rotation rot, ref FixtureRotatorComponent rotcomp, in AxisRotator axis) => {
+        var outputDeps = Entities.ForEach((ref Rotation rot, in FixtureFunction_Rotation rotcomp, in AxisRotator axis) => {
             float curangle = axis.CurrentAngle;
             //curangle += dtime * 40f;
             curangle *= Mathf.Deg2Rad;
