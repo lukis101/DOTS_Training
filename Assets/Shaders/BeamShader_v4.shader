@@ -55,7 +55,6 @@ SubShader
 		#pragma target 3.0
 
 		#include "UnityCG.cginc"
-		#include "ColorFuncs.cginc"
 
         UNITY_DECLARE_DEPTH_TEXTURE(_CameraDepthTexture);
 
@@ -67,10 +66,6 @@ SubShader
 		UNITY_INSTANCING_BUFFER_START(Props)
             UNITY_DEFINE_INSTANCED_PROP(float3, _BaseColor)
             UNITY_DEFINE_INSTANCED_PROP(half, _Intensity)
-            UNITY_DEFINE_INSTANCED_PROP(float3, _SecondColor)
-            UNITY_DEFINE_INSTANCED_PROP(half, _XFade)
-            UNITY_DEFINE_INSTANCED_PROP(half, _Pan)
-            UNITY_DEFINE_INSTANCED_PROP(half, _Tilt)
             UNITY_DEFINE_INSTANCED_PROP(half, _Focus)
         UNITY_INSTANCING_BUFFER_END(Props)
 
@@ -81,14 +76,10 @@ SubShader
 		{
 			float4 pos : SV_Position;
 			float4 col : COLOR;
-			//float3 uv : TEXCOORD1;
 			float4 objpos : TEXCOORD1;
 			nointerpolation float3 objcampos : TEXCOORD2;
             float4 originPos : TEXCOORD3;
 			float4 grabPos : TEXCOORD4;
-			//float4 wpos : TEXCOORD5;
-			//float3 viewDir : TEXCOORD6;
-			//float3 worldDirection : TEXCOORD7;
 			UNITY_VERTEX_INPUT_INSTANCE_ID
 		};
 
@@ -162,13 +153,11 @@ SubShader
 			o.objpos = v.vertex;
 			o.pos = UnityObjectToClipPos(o.objpos);
 			o.col = UNITY_ACCESS_INSTANCED_PROP(Props, _Intensity) / pow(focus,1.5)
-                * float4(LerpHSV(UNITY_ACCESS_INSTANCED_PROP(Props, _BaseColor).rgb, UNITY_ACCESS_INSTANCED_PROP(Props, _SecondColor).rgb, UNITY_ACCESS_INSTANCED_PROP(Props, _XFade)), 1);
+                * float4(UNITY_ACCESS_INSTANCED_PROP(Props, _BaseColor).rgb, 1);
 
             o.objcampos = mul(unity_WorldToObject, float4(_WorldSpaceCameraPos.xyz, 1.0));
             o.originPos = ComputeGrabScreenPos(UnityObjectToClipPos(float4(0,0,0,1)));
-            //o.wpos = mul(m_scaled, o.objpos);
 			o.grabPos = ComputeGrabScreenPos(o.pos);
-			//o.worldDirection = (o.wpos.xyz - _WorldSpaceCameraPos);
 
 			return o;
 		}
@@ -241,13 +230,6 @@ SubShader
             finalatten += scatter;
 
             //if(i.uv.y > 0.95) inters = getIntensity(fpos); //spot angle debug
-
-            /*float blinding = 1-saturate(length(objcampos.xz)*2); // TODO use same falloff function?
-            if (originoccluded) blinding=0;
-            float lookat = saturate(dot(normalize(objcampos), float3(0,1,0))); // TODO attenuate/only if inside
-            finalatten += blinding *lookat *_Blinding;*/
-
-            //if (originoccluded) finalatten *= 1-lookat;
 
 		    return float4(col.rgb * pow(finalatten, 2.2), 1);
 			//return col;

@@ -102,7 +102,7 @@ public class FixtureRotator : FixtureComponent, IConvertGameObjectToEntity
     }
 }
 
-[UpdateAfter(typeof(DMXInputManagerSystem))]
+[UpdateInGroup(typeof(SimulationSystemGroup))]
 public class AxisRotatorSystem : JobComponentSystem
 {
     protected override JobHandle OnUpdate(JobHandle inputDeps)

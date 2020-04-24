@@ -173,7 +173,7 @@ public class FixtureLight : FixtureComponent, IConvertGameObjectToEntity
     }
 }
 
-[UpdateAfter(typeof(DMXInputManagerSystem))]
+[UpdateInGroup(typeof(SimulationSystemGroup))]
 public class FixtureLightIntesitySystem : JobComponentSystem
 {
     protected override JobHandle OnUpdate(JobHandle inputDeps)
@@ -189,7 +189,7 @@ public class FixtureLightIntesitySystem : JobComponentSystem
         //return JobHandle.CombineDependencies(job1, job2); // TODO find how to write to same comp in parallel
     }
 }
-[UpdateAfter(typeof(FixtureLightIntesitySystem))]
+[UpdateInGroup(typeof(SimulationSystemGroup))]
 public class FixtureLightAngleSystem : JobComponentSystem
 {
     protected override JobHandle OnUpdate(JobHandle inputDeps)

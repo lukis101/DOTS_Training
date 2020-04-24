@@ -46,17 +46,3 @@ public class DMXInputManager : MonoBehaviour
         return (rawvalue - minvalue) / (float)(maxvalue - minvalue);
     }
 }
-
-public class DMXInputManagerSystem : JobComponentSystem
-{
-    protected override JobHandle OnUpdate(JobHandle inputDeps)
-    {
-        var dtime = Time.DeltaTime;
-        var abstime = UnityEngine.Time.timeSinceLevelLoad;
-        var outputDeps = Entities.WithoutBurst().ForEach((ref DMXParameterComponent param) => {
-            param.CurValue = DMXInputSingleton.instance.values[param.Universe * 256 + param.Address] / 255.0f;
-        }).Schedule(inputDeps);
-
-        return outputDeps;
-    }
-}
